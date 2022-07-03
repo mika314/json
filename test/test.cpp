@@ -32,6 +32,12 @@ TEST_CASE("Num fields", "[json]")
   REQUIRE(r("n2").asNum().asFloat() == 3.14f);
   REQUIRE(r("n3").isNum());
   REQUIRE(r("n3").asNum().asFloat() == 2.17f);
+
+  auto fiels = r.getFields();
+  REQUIRE(fiels.size() == 3);
+  REQUIRE(std::find(std::begin(fiels), std::end(fiels), "n1") != std::end(fiels));
+  REQUIRE(std::find(std::begin(fiels), std::end(fiels), "n2") != std::end(fiels));
+  REQUIRE(std::find(std::begin(fiels), std::end(fiels), "n3") != std::end(fiels));
 }
 
 TEST_CASE("Str fields", "[json]")

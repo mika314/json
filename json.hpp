@@ -22,9 +22,10 @@ namespace json
     Obj(Obj &&);
     Obj(const Obj &);
     auto empty() const -> bool;
+    auto getFields() const -> std::vector<std::string_view>;
+    auto operator()(std::string_view) const -> const Val &;
     auto operator=(Obj &&) -> Obj &;
     auto operator=(const Obj &) -> Obj &;
-    auto operator()(std::string_view) const -> const Val &;
     auto size() const -> std::size_t;
   };
 
@@ -89,6 +90,7 @@ namespace json
     auto asUInt64() const -> uint64_t;
     auto begin() const -> const Val *;
     auto end() const -> const Val *;
+    auto getFields() const -> std::vector<std::string_view>;
     auto isArr() const -> bool;
     auto isBool() const -> bool;
     auto isNull() const -> bool;
@@ -140,5 +142,6 @@ namespace json
     auto empty() const -> bool;
     auto operator()(std::string_view) const -> const Val &;
     auto size() const -> std::size_t;
+    auto getFields() const -> std::vector<std::string_view>;
   };
 } // namespace json

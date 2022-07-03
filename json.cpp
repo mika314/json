@@ -591,4 +591,21 @@ namespace json
 
   Root::Root(std::string json) : json(std::move(json)), root(obj()) {}
 
+  auto Obj::getFields() const -> std::vector<std::string_view>
+  {
+    std::vector<std::string_view> ret;
+    for (auto &[key, val] : *fields)
+      ret.push_back(key);
+    return ret;
+  }
+
+  auto Root::getFields() const -> std::vector<std::string_view>
+  {
+    return root.getFields();
+  }
+
+  auto Val::getFields() const -> std::vector<std::string_view>
+  {
+    return asObj().getFields();
+  }
 } // namespace json
