@@ -171,6 +171,10 @@ namespace json
       return obj();
     if (isArr())
       return arr();
+    if (isBool())
+      return bool_();
+    if (isNull())
+      return null();
     throw std::runtime_error("Unexpected character");
   }
 

@@ -1,5 +1,5 @@
-#include <json/json.hpp>
 #include <catch2/catch.hpp>
+#include <json/json.hpp>
 #include <sstream>
 
 TEST_CASE("Empty objest", "[json]")
@@ -135,4 +135,39 @@ TEST_CASE("Parse from string", "[json]")
   REQUIRE(r("n3").isStr());
   REQUIRE(r("n3").asStr() == "hij");
   REQUIRE(static_cast<std::string>(r("n3")) == "hij");
+}
+
+TEST_CASE("Null values", "[json]")
+{
+  using namespace json;
+  auto st = std::istringstream{R"({
+  "n1": null,
+  "n2": null,
+  "n3": null
+})"};
+  const auto r = Root{st};
+  REQUIRE(!r.empty());
+  REQUIRE(r.size() == 3);
+  REQUIRE(r("n1").isNull());
+  REQUIRE(r("n2").isNull());
+  REQUIRE(r("n3").isNull());
+}
+
+TEST_CASE("Boolean values", "[json]")
+{
+  using namespace json;
+  auto st = std::istringstream{R"({
+  "n1": true,
+  "n2": false,
+  "n3": true
+})"};
+  const auto r = Root{st};
+  REQUIRE(!r.empty());
+  REQUIRE(r.size() == 3);
+  REQUIRE(r("n1").isBool());
+  REQUIRE(r("n1").asBool());
+  REQUIRE(r("n2").isBool());
+  REQUIRE(!r("n2").asBool());
+  REQUIRE(r("n3").isBool());
+  REQUIRE(r("n3").asBool());
 }
