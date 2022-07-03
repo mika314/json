@@ -4,6 +4,7 @@
 
 TEST_CASE("Empty objest", "[json]")
 {
+  using namespace json;
   auto st = std::istringstream{"{}"};
   const auto r = Root{st};
   REQUIRE(r.empty());
@@ -11,6 +12,7 @@ TEST_CASE("Empty objest", "[json]")
 
 TEST_CASE("Num fields", "[json]")
 {
+  using namespace json;
   auto st = std::istringstream{R"({
   "n1": 314,
   "n2": 3.14,
@@ -34,6 +36,7 @@ TEST_CASE("Num fields", "[json]")
 
 TEST_CASE("Str fields", "[json]")
 {
+  using namespace json;
   auto st = std::istringstream{R"({
   "n1": "abcd",
   "n2": "\n",
@@ -55,6 +58,7 @@ TEST_CASE("Str fields", "[json]")
 
 TEST_CASE("Arrays", "[json]")
 {
+  using namespace json;
   auto st = std::istringstream{R"({
   "n1": ["abcd", "efg"]
 })"};
@@ -78,6 +82,7 @@ TEST_CASE("Arrays", "[json]")
 
 TEST_CASE("Nested objects", "[json]")
 {
+  using namespace json;
   auto st = std::istringstream{R"({
   "n1": {"abcd": "efg"}
 })"};
@@ -93,6 +98,7 @@ TEST_CASE("Nested objects", "[json]")
 
 TEST_CASE("Range for-loop", "[json]")
 {
+  using namespace json;
   auto st = std::istringstream{R"({
   "n1": [1, 1, 1, 1]
 })"};
@@ -112,6 +118,7 @@ TEST_CASE("Range for-loop", "[json]")
 
 TEST_CASE("Parse from string", "[json]")
 {
+  using namespace json;
   const auto r = Root{R"({
   "n1": "abcd",
   "n2": "efg",
