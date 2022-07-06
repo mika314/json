@@ -362,22 +362,38 @@ namespace json
 
   auto Num::asInt32() const -> int32_t
   {
-    return std::stoi(std::string(str));
+    int32_t ret;
+    std::stringstream ss;
+    ss << str;
+    ss >> ret;
+    return ret;
   }
 
   auto Num::asInt64() const -> int64_t
   {
-    return std::stoll(std::string(str));
+    int64_t ret;
+    std::stringstream ss;
+    ss << str;
+    ss >> ret;
+    return ret;
   }
 
   auto Num::asUInt32() const -> uint32_t
   {
-    return std::stoul(std::string(str));
+    uint32_t ret;
+    std::stringstream ss;
+    ss << str;
+    ss >> ret;
+    return ret;
   }
 
   auto Num::asUInt64() const -> uint64_t
   {
-    return std::stoull(std::string(str));
+    uint64_t ret;
+    std::stringstream ss;
+    ss << str;
+    ss >> ret;
+    return ret;
   }
 
   auto Val::asArr() const -> const Arr &
@@ -589,7 +605,7 @@ namespace json
     return asArr().end();
   }
 
-  Root::Root(std::string json) : json(std::move(json)), root(obj()) {}
+  Root::Root(std::string aJson) : json(std::move(aJson)), root(obj()) {}
 
   auto Obj::getFields() const -> std::vector<std::string_view>
   {

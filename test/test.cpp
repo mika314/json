@@ -29,9 +29,9 @@ TEST_CASE("Num fields", "[json]")
   REQUIRE(r("n1").isNum());
   REQUIRE(r("n1").asNum().asInt32() == 314);
   REQUIRE(r("n2").isNum());
-  REQUIRE(r("n2").asNum().asFloat() == 3.14f);
+  REQUIRE(r("n2").asNum().asFloat() == Approx(3.14f));
   REQUIRE(r("n3").isNum());
-  REQUIRE(r("n3").asNum().asFloat() == 2.17f);
+  REQUIRE(r("n3").asNum().asFloat() == Approx(2.17f));
 
   auto fiels = r.getFields();
   REQUIRE(fiels.size() == 3);
@@ -117,6 +117,9 @@ TEST_CASE("Range for-loop", "[json]")
   for (const auto &e : r("n1"))
   {
     REQUIRE(e.asInt32() == 1);
+    REQUIRE(e.asUInt32() == 1);
+    REQUIRE(e.asInt64() == 1);
+    REQUIRE(e.asUInt64() == 1);
     ++cnt;
   }
   REQUIRE(cnt == 4);
