@@ -1,5 +1,0 @@
-[[library]]
-type="file"
-name="json"
-path=".."
-includes=["json/json.hpp"]
