@@ -624,4 +624,14 @@ namespace json
   {
     return asObj().getFields();
   }
+
+  auto Root::asObj() const -> const Obj &
+  {
+    return root;
+  }
+
+  auto Root::asObj() -> Obj &
+  {
+    return root;
+  }
 } // namespace json

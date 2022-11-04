@@ -143,5 +143,7 @@ namespace json
     auto operator()(std::string_view) const -> const Val &;
     auto size() const -> std::size_t;
     auto getFields() const -> std::vector<std::string_view>;
+    auto asObj() const -> const Obj &;
+    auto asObj() -> Obj &;
   };
 } // namespace json
