@@ -1,12 +1,49 @@
 #include "json.hpp"
 #include <sstream>
+
 namespace json
 {
   Obj::Obj() : fields(std::make_unique<std::unordered_map<std::string_view, Val>>()) {}
 
   static auto readFromStream(std::istream &) -> std::string;
 
-  Root::Root(std::istream &st) : json(readFromStream(st)), root(obj()) {}
+  Root::Root(std::istream &st)
+    : json(readFromStream(st)), root([this]() -> Val::Data {
+        if (isStr())
+          return str();
+        if (isNum())
+          return num();
+        if (isObj())
+          return obj();
+        if (isArr())
+          return arr();
+        if (isBool())
+          return bool_();
+        if (isNull())
+          return null();
+        throw std::runtime_error("Json parse error");
+      }())
+  {
+  }
+
+  Root::Root(std::string aJson)
+    : json(std::move(aJson)), root([this]() -> Val::Data {
+        if (isStr())
+          return str();
+        if (isNum())
+          return num();
+        if (isObj())
+          return obj();
+        if (isArr())
+          return arr();
+        if (isBool())
+          return bool_();
+        if (isNull())
+          return null();
+        throw std::runtime_error("Json parse error");
+      }())
+  {
+  }
 
   auto readFromStream(std::istream &st) -> std::string
   {
@@ -95,7 +132,11 @@ namespace json
       throw std::runtime_error("Unexpected end of file");
     auto tmpCh = json[pos];
     if (tmpCh != ch)
-      throw std::runtime_error("Unexpected character");
+    {
+      std::ostringstream ss;
+      ss << "Unexpected character '" << tmpCh << "' != '" << ch << "'";
+      throw std::runtime_error(ss.str());
+    }
     ++pos;
   }
 
@@ -280,7 +321,7 @@ namespace json
       return false;
     }
     else
-      throw std::runtime_error("Unexpected character");
+      throw std::runtime_error("Expect bool value");
   }
 
   auto Root::isNull() const -> bool
@@ -328,6 +369,11 @@ namespace json
   auto Root::operator()(std::string_view field) const -> const Val &
   {
     return root(field);
+  }
+
+  auto Root::operator[](size_t idx) const -> const Val &
+  {
+    return root[idx];
   }
 
   auto Root::size() const -> std::size_t
@@ -525,6 +571,11 @@ namespace json
     throw std::runtime_error("Not an array or object");
   }
 
+  auto Val::empty() const -> bool
+  {
+    return size() == 0;
+  }
+
   Val::operator std::string() const
   {
     return asStr();
@@ -604,8 +655,6 @@ namespace json
   {
     return asArr().end();
   }
-
-  Root::Root(std::string aJson) : json(std::move(aJson)), root(obj()) {}
 
   auto Obj::getFields() const -> std::vector<std::string_view>
   {

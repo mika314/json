@@ -180,3 +180,18 @@ TEST_CASE("Boolean values", "[json]")
   REQUIRE(r("n3").isBool());
   REQUIRE(r("n3").asBool());
 }
+
+TEST_CASE("Array", "[json]")
+{
+  using namespace json;
+  auto st = std::istringstream{R"([
+  "n1",
+  "n2",
+  "n3"
+])"};
+  const auto r = Root{st};
+  REQUIRE(!r.empty());
+  REQUIRE(r.size() == 3);
+  REQUIRE(r[0].isStr());
+  REQUIRE(r[0].asStr() == "n1");
+}

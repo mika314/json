@@ -70,7 +70,8 @@ namespace json
     friend class Root;
 
   private:
-    std::variant<std::string_view, Num, Obj, Arr, bool, std::nullptr_t> data;
+    using Data = std::variant<std::string_view, Num, Obj, Arr, bool, std::nullptr_t>;
+    Data data;
 
   public:
     template <typename T>
@@ -100,14 +101,15 @@ namespace json
     auto operator()(std::string_view) const -> const Val &;
     auto operator[](size_t) const -> const Val &;
     auto size() const -> std::size_t;
-    operator bool() const;
-    operator double() const;
-    operator float() const;
-    operator int32_t() const;
-    operator int64_t() const;
-    operator std::string() const;
-    operator uint32_t() const;
-    operator uint64_t() const;
+    auto empty() const -> bool;
+    explicit operator bool() const;
+    explicit operator double() const;
+    explicit operator float() const;
+    explicit operator int32_t() const;
+    explicit operator int64_t() const;
+    explicit operator std::string() const;
+    explicit operator uint32_t() const;
+    explicit operator uint64_t() const;
   };
 
   class Root
@@ -115,7 +117,7 @@ namespace json
   private:
     std::string json;
     size_t pos = 0;
-    Obj root;
+    Val root;
 
     auto arr() -> Arr;
     auto bool_() -> bool;
@@ -141,6 +143,7 @@ namespace json
     Root(std::string);
     auto empty() const -> bool;
     auto operator()(std::string_view) const -> const Val &;
+    auto operator[](size_t) const -> const Val &;
     auto size() const -> std::size_t;
     auto getFields() const -> std::vector<std::string_view>;
   };
