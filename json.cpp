@@ -8,7 +8,7 @@ namespace json
   static auto readFromStream(std::istream &) -> std::string;
 
   Root::Root(std::istream &st)
-    : json(readFromStream(st)), root([this]() -> Val::Data {
+    : json(readFromStream(st)), root_([this]() -> Val::Data {
         if (isStr())
           return str();
         if (isNum())
@@ -21,13 +21,13 @@ namespace json
           return bool_();
         if (isNull())
           return null();
-        throw std::runtime_error("Json parse error");
+        return null();
       }())
   {
   }
 
   Root::Root(std::string aJson)
-    : json(std::move(aJson)), root([this]() -> Val::Data {
+    : json(std::move(aJson)), root_([this]() -> Val::Data {
         if (isStr())
           return str();
         if (isNum())
@@ -40,7 +40,7 @@ namespace json
           return bool_();
         if (isNull())
           return null();
-        throw std::runtime_error("Json parse error");
+        return null();
       }())
   {
   }
@@ -56,27 +56,31 @@ namespace json
   {
     Obj ret;
     whitespace();
-    char_('{');
+    if (!char_('{'))
+      return {};
     whitespace();
     if (isStr())
       for (;;)
       {
         const auto name = str();
         whitespace();
-        char_(':');
-        const auto v = val();
+        if (!char_(':'))
+          return {};
+        const auto v = val_();
         const auto tmp = ret.fields->try_emplace(name, v);
         if (!tmp.second)
-          throw std::runtime_error("Duplicate field");
+          return Obj{};
         whitespace();
         if (!isChar(','))
           break;
-        char_(',');
+        if (!char_(','))
+          return {};
         whitespace();
         if (!isStr())
-          throw std::runtime_error("Expected field name");
+          return Obj{};
       }
-    char_('}');
+    if (!char_('}'))
+      return {};
     return ret;
   }
 
@@ -126,18 +130,15 @@ namespace json
     return *this;
   }
 
-  auto Root::char_(char ch) -> void
+  auto Root::char_(char ch) -> bool
   {
     if (eof())
-      throw std::runtime_error("Unexpected end of file");
+      return false;
     auto tmpCh = json[pos];
     if (tmpCh != ch)
-    {
-      std::ostringstream ss;
-      ss << "Unexpected character '" << tmpCh << "' != '" << ch << "'";
-      throw std::runtime_error(ss.str());
-    }
+      return false;
     ++pos;
+    return true;
   }
 
   auto Root::whitespace() -> void
@@ -158,7 +159,8 @@ namespace json
 
   auto Root::str() -> std::string_view
   {
-    char_('"');
+    if (!char_('"'))
+      return {};
     auto start = pos;
     while (!eof())
     {
@@ -166,7 +168,7 @@ namespace json
       {
         ++pos;
         if (eof())
-          throw std::runtime_error("Unexpected end of file");
+          return {};
         switch (json[pos])
         {
         case '"':
@@ -182,12 +184,12 @@ namespace json
           {
             ++pos;
             if (eof())
-              throw std::runtime_error("Unexpected end of file");
+              return {};
             if (!isHex(json[pos]))
-              throw std::runtime_error("Expected hex character");
+              return {};
           }
           break;
-        default: throw std::runtime_error("Unexpected escape sequence");
+        default: return {};
         }
       }
       else if (isChar('"'))
@@ -198,10 +200,10 @@ namespace json
       else
         ++pos;
     }
-    throw std::runtime_error("Unexpected end of file");
+    return {};
   }
 
-  auto Root::val() -> Val
+  auto Root::val_() -> Val
   {
     whitespace();
     if (isStr())
@@ -216,7 +218,7 @@ namespace json
       return bool_();
     if (isNull())
       return null();
-    throw std::runtime_error("Unexpected character");
+    return null();
   }
 
   auto Root::eof() const -> bool
@@ -270,24 +272,27 @@ namespace json
   auto Root::arr() -> Arr
   {
     Arr ret;
-    char_('[');
+    if (!char_('['))
+      return {};
     whitespace();
     if (isVal())
     {
-      ret.vals->push_back(val());
+      ret.vals->push_back(val_());
       whitespace();
     }
     while (isChar(','))
     {
-      char_(',');
+      if (!char_(','))
+        return {};
       whitespace();
       if (isVal())
       {
-        ret.vals->push_back(val());
+        ret.vals->push_back(val_());
         whitespace();
       }
     }
-    char_(']');
+    if (!char_(']'))
+      return {};
     return ret;
   }
 
@@ -321,7 +326,7 @@ namespace json
       return false;
     }
     else
-      throw std::runtime_error("Expect bool value");
+      return {};
   }
 
   auto Root::isNull() const -> bool
@@ -363,22 +368,22 @@ namespace json
 
   auto Root::empty() const -> bool
   {
-    return root.empty();
+    return root_.empty();
   }
 
   auto Root::operator()(std::string_view field) const -> const Val &
   {
-    return root(field);
+    return root_(field);
   }
 
   auto Root::operator[](size_t idx) const -> const Val &
   {
-    return root[idx];
+    return root_[idx];
   }
 
   auto Root::size() const -> std::size_t
   {
-    return root.size();
+    return root_.size();
   }
 
   auto Arr::empty() const -> bool
@@ -445,35 +450,41 @@ namespace json
   auto Val::asArr() const -> const Arr &
   {
     if (!std::holds_alternative<Arr>(data))
-      throw std::runtime_error("Not an array");
+    {
+      static Arr r;
+      return r;
+    }
     return std::get<Arr>(data);
   }
 
   auto Val::asBool() const -> bool
   {
     if (!std::holds_alternative<bool>(data))
-      throw std::runtime_error("Not a boolean");
+      return {};
     return std::get<bool>(data);
   }
 
   auto Val::asNum() const -> Num
   {
     if (!std::holds_alternative<Num>(data))
-      throw std::runtime_error("Not a number");
+      return {};
     return std::get<Num>(data);
   }
 
   auto Val::asObj() const -> const Obj &
   {
     if (!std::holds_alternative<Obj>(data))
-      throw std::runtime_error("Not an object");
+    {
+      static Obj r;
+      return r;
+    }
     return std::get<Obj>(data);
   }
 
   auto Val::asStr() const -> std::string
   {
     if (!std::holds_alternative<std::string_view>(data))
-      throw std::runtime_error("Not a string");
+      return {};
     // unescape the string_view
     std::string ret;
     auto str = std::get<std::string_view>(data);
@@ -483,7 +494,7 @@ namespace json
       {
         ++i;
         if (i == str.size())
-          throw std::runtime_error("Invalid escape sequence");
+          return {};
         switch (str[i])
         {
         case '"': ret.push_back('"'); break;
@@ -496,14 +507,14 @@ namespace json
         case 't': ret.push_back('\t'); break;
         case 'u': {
           if (i + 4 >= str.size())
-            throw std::runtime_error("Invalid escape sequence");
+            return {};
           auto hex = std::string{str.substr(i + 1, 4)};
           i += 4;
           auto code = std::stoul(hex, nullptr, 16);
           ret.push_back(static_cast<char>(code));
           break;
         }
-        default: throw std::runtime_error("Invalid escape sequence");
+        default: return {};
         }
       }
       else
@@ -568,7 +579,7 @@ namespace json
       return asArr().size();
     else if (isObj())
       return asObj().size();
-    throw std::runtime_error("Not an array or object");
+    return {};
   }
 
   auto Val::empty() const -> bool
@@ -666,7 +677,12 @@ namespace json
 
   auto Root::getFields() const -> std::vector<std::string_view>
   {
-    return root.getFields();
+    return root_.getFields();
+  }
+
+  auto Root::root() const -> Val
+  {
+    return root_;
   }
 
   auto Val::getFields() const -> std::vector<std::string_view>
