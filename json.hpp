@@ -1,10 +1,10 @@
 #pragma once
 #include <memory>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <variant>
 #include <vector>
-#include <string>
 
 namespace json
 {
@@ -118,8 +118,7 @@ namespace json
   private:
     std::string json;
     size_t pos = 0;
-    Val root;
-
+    Val root_;
     auto arr() -> Arr;
     auto bool_() -> bool;
     auto char_(char) -> void;
@@ -147,5 +146,6 @@ namespace json
     auto operator[](size_t) const -> const Val &;
     auto size() const -> std::size_t;
     auto getFields() const -> std::vector<std::string_view>;
+    auto root() const -> Val;
   };
 } // namespace json

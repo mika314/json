@@ -8,7 +8,7 @@ namespace json
   static auto readFromStream(std::istream &) -> std::string;
 
   Root::Root(std::istream &st)
-    : json(readFromStream(st)), root([this]() -> Val::Data {
+    : json(readFromStream(st)), root_([this]() -> Val::Data {
         if (isStr())
           return str();
         if (isNum())
@@ -27,7 +27,7 @@ namespace json
   }
 
   Root::Root(std::string aJson)
-    : json(std::move(aJson)), root([this]() -> Val::Data {
+    : json(std::move(aJson)), root_([this]() -> Val::Data {
         if (isStr())
           return str();
         if (isNum())
@@ -363,22 +363,22 @@ namespace json
 
   auto Root::empty() const -> bool
   {
-    return root.empty();
+    return root_.empty();
   }
 
   auto Root::operator()(std::string_view field) const -> const Val &
   {
-    return root(field);
+    return root_(field);
   }
 
   auto Root::operator[](size_t idx) const -> const Val &
   {
-    return root[idx];
+    return root_[idx];
   }
 
   auto Root::size() const -> std::size_t
   {
-    return root.size();
+    return root_.size();
   }
 
   auto Arr::empty() const -> bool
@@ -666,7 +666,12 @@ namespace json
 
   auto Root::getFields() const -> std::vector<std::string_view>
   {
-    return root.getFields();
+    return root_.getFields();
+  }
+
+  auto Root::root() const -> Val
+  {
+    return root_;
   }
 
   auto Val::getFields() const -> std::vector<std::string_view>
